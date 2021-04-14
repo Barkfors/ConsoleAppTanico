@@ -66,7 +66,73 @@ namespace ConsoleAppTanico
                 }
             }
         }
+        public async Task<CimsLoadReportResponse> PostLoadingReport(CimsLoadReportRequest aRequest)
+        {
+            using (var client = CimsClient.GetHttpClient())
+            {
+                using (HttpResponseMessage response = await client.PostAsJsonAsync(_settings.LoadReportPath, aRequest))
+                using (var res = response.EnsureSuccessStatusCode())
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<CimsLoadReportResponse>(jsonString);
+                }
+            }
+
+        }
+        public async Task<bool> PostFreightCosts(CimsFreightCostRequest aRequest)
+        {
+            using (var client = CimsClient.GetHttpClient())
+            {
+                using (HttpResponseMessage response = await client.PostAsJsonAsync(_settings.FreightCostPath, aRequest))
+                using (var res = response.EnsureSuccessStatusCode())
+                {
+                    return true;
+                }
+            }
+        }
     }
+    public class CimsFreightCostRequest
+    {
+        public string IdNo { get; set; }
+        public CimsFreightCostRow[] AdditionalCosts { get; set; }
+    }
+    public class CimsFreightCostRow
+    {
+        public string CostIdNo { get; set; }
+        public double Amount { get; set; }
+    }
+    public class CimsLoadReportRequest
+    {
+        public CimsLoadReportRow[] DeliveryRows { get; set; }
+    }
+    public class CimsLoadReportResponse
+    {
+        public string ErrMsg { get; set; }
+        public CimsLoadReportRowResult[] DeliveryRowResults { get; set; }
+    }
+    public class CimsLoadReportRow
+    {
+        public string OrderNo { get; set; }
+        public int RowNo { get; set; }
+        public string ItemNo { get; set; }
+        public string Location { get; set; }
+        public DateTime DeliveryDate { get; set; }
+        public string Unit { get; set; }
+        public double Quantity { get; set; }
+        public string ReferenceNo { get; set; }
+    }
+    public class CimsLoadReportRowResult
+    {
+        public string OrderNo { get; set; }
+        public int RowNo { get; set; }
+        public string DeliveryNote { get; set; }
+        public string Errmsg { get; set; }
+        public override string ToString()
+        {
+            return this.OrderNo + ", " + this.RowNo.ToString() + ", " + this.DeliveryNote;
+        }
+    }
+
     public class CimsContractResponse
     {
         public CimsContract[] Contracts { get; set; }
@@ -144,6 +210,8 @@ namespace ConsoleAppTanico
         public string CustomerPath { get; set; } = "getCustomers";
         public string ItemPath { get; set; } = "getItems";
         public string ContractsPath { get; set; } = "getContracts";
-
+        public string LoadReportPath { get; set; } = "DeliverOrder";
+        public string FreightCostPath { get; set; } = "CreateImport";
+      
     }
 }
